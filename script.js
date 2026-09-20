@@ -188,9 +188,10 @@ async function processUniversalWatermark() {
             else if (colorTheme === 'light-blue') rgbColor = PDFLib.rgb(0.6, 0.75, 0.9);
 
             let targetIndices = pagesInput ? parsePageRanges(pagesInput, totalPages) : pdfDoc.getPageIndices();
+            const pages = pdfDoc.getPages();
 
             for (let idx of targetIndices) {
-                const page = pdfDoc.getPage(idx);
+                const page = pages[idx];
                 const { width, height } = page.getSize();
                 const textWidth = font.widthOfTextAtSize(text, size);
 
@@ -201,7 +202,7 @@ async function processUniversalWatermark() {
                     font: font,
                     color: rgbColor,
                     opacity: 0.4,
-                    rotate: { type: 'angle', angle: 45 },
+                    rotate: PDFLib.degrees(45),
                 });
             }
 
