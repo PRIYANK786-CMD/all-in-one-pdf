@@ -152,13 +152,14 @@ async function convertJpgToPdf() {
     downloadBlob(await pdfDoc.save(), "sequenced-images.pdf", "application/pdf");
 }
 
-// 6. UNIVERSAL WATERMARK FUNCTIONALITY (Handles both PDF & JPG files correctly)
+// 6. UNIVERSAL WATERMARK FUNCTIONALITY (Handles position alignment)
 async function processUniversalWatermark() {
     const fileInput = document.getElementById('watermark-file');
     const text = document.getElementById('watermark-text').value.trim();
     const pagesInput = document.getElementById('watermark-pages').value.trim();
     const size = parseInt(document.getElementById('watermark-size').value, 10);
     const colorTheme = document.getElementById('watermark-color').value;
+    const position = document.getElementById('watermark-position') ? document.getElementById('watermark-position').value : 'center-diagonal';
     const isBold = document.getElementById('watermark-bold').checked;
     const isItalic = document.getElementById('watermark-italic').checked;
     const btn = document.getElementById('watermark-btn');
@@ -180,7 +181,6 @@ async function processUniversalWatermark() {
             const pdfDoc = await PDFLib.PDFDocument.load(await firstFile.arrayBuffer());
             const totalPages = pdfDoc.getPageCount();
 
-            // Always embed standard Helvetica safely to prevent font mapping errors
             let font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
 
             let rgbColor = PDFLib.rgb(0.2, 0.2, 0.2); // Dark Charcoal
@@ -196,14 +196,53 @@ async function processUniversalWatermark() {
                 const { width, height } = page.getSize();
                 const textWidth = font.widthOfTextAtSize(text, size);
 
+                let xCoord, yCoord, rotationAngle = 0;
+
+                switch (position) {
+                    case 'center-diagonal':
+                        xCoord = (width / 2) - (textWidth / 2);
+                        yCoord = height / 2;
+                        rotationAngle = 45;
+                        break;
+                    case 'center-horizontal':
+                        xCoord = (width / 2) - (textWidth / 2);
+                        yCoord = height / 2;
+                        rotationAngle = 0;
+                        break;
+                    case 'top':
+                        xCoord = (width / 2) - (textWidth / 2);
+                        yCoord = height - 50;
+                        rotationAngle = 0;
+                        break;
+                    case 'bottom':
+                        xCoord = (width / 2) - (textWidth / 2);
+                        yCoord = 50;
+                        rotationAngle = 0;
+                        break;
+                    case 'top-left':
+                        xCoord = 50;
+                        yCoord = height - 50;
+                        rotationAngle = 0;
+                        break;
+                    case 'bottom-right':
+                        xCoord = width - textWidth - 50;
+                        yCoord = 50;
+                        rotationAngle = 0;
+                        break;
+                    default:
+                        xCoord = (width / 2) - (textWidth / 2);
+                        yCoord = height / 2;
+                        rotationAngle = 45;
+                }
+
                 page.drawText(text, {
-                    x: (width / 2) - (textWidth / 2),
-                    y: height / 2,
+                    x: xCoord,
+                    y: yCoord,
                     size: size,
                     font: font,
                     color: rgbColor,
                     opacity: 0.4,
-                    rotate: PDFLib.degrees(45),
+                    rotate: PDFLib.degrees(rotationAngle),
                 });
             }
 
@@ -232,14 +271,51 @@ async function processUniversalWatermark() {
                 if (colorTheme === 'light-gray') ctx.fillStyle = 'rgba(180, 180, 180, 0.4)';
                 else if (colorTheme === 'light-red') ctx.fillStyle = 'rgba(230, 100, 100, 0.4)';
                 else if (colorTheme === 'light-blue') ctx.fillStyle = 'rgba(100, 150, 230, 0.4)';
-                else ctx.fillStyle = 'rgba(50, 50, 50, 0.4)'; // Dark
+                else ctx.fillStyle = 'rgba(50, 50, 50, 0.4)';
 
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
 
                 ctx.save();
-                ctx.translate(canvas.width / 2, canvas.height / 2);
-                ctx.rotate(-Math.PI / 4);
+                let canvasX = canvas.width / 2;
+                let canvasY = canvas.height / 2;
+                let canvasRotate = -Math.PI / 4;
+
+                switch (position) {
+                    case 'center-diagonal':
+                        canvasX = canvas.width / 2;
+                        canvasY = canvas.height / 2;
+                        canvasRotate = -Math.PI / 4;
+                        break;
+                    case 'center-horizontal':
+                        canvasX = canvas.width / 2;
+                        canvasY = canvas.height / 2;
+                        canvasRotate = 0;
+                        break;
+                    case 'top':
+                        canvasX = canvas.width / 2;
+                        canvasY = 80;
+                        canvasRotate = 0;
+                        break;
+                    case 'bottom':
+                        canvasX = canvas.width / 2;
+                        canvasY = canvas.height - 80;
+                        canvasRotate = 0;
+                        break;
+                    case 'top-left':
+                        canvasX = 120;
+                        canvasY = 80;
+                        canvasRotate = 0;
+                        break;
+                    case 'bottom-right':
+                        canvasX = canvas.width - 120;
+                        canvasY = canvas.height - 80;
+                        canvasRotate = 0;
+                        break;
+                }
+
+                ctx.translate(canvasX, canvasY);
+                if (canvasRotate !== 0) ctx.rotate(canvasRotate);
                 ctx.fillText(text, 0, 0);
                 ctx.restore();
 

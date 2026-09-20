@@ -3,37 +3,34 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PDF Utility Hub By Mr. Priyank Panchal</title>
-    <!-- Tailwind CSS -->
+    <title>PDF Utility Hub</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- PDF-lib for PDF manipulation -->
-    <script src="https://unpkg.com/pdf-lib@1.4.0/dist/pdf-lib.min.js"></script>
-    <!-- PDF.js for rendering PDF pages to images -->
+    <!-- PDF-Lib CDN -->
+    <script src="https://unpkg.com/pdf-lib@1.4.0"></script>
+    <!-- PDF.js for rendering PDFs to images -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
     <script>
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
     </script>
-    <!-- JSZip for bundling images into a single zip download -->
+    <!-- JSZip for creating ZIP archives -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 </head>
-<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
+<body class="bg-slate-100 min-h-screen flex flex-col justify-between font-sans text-slate-800">
 
     <!-- Header -->
-    <header class="bg-indigo-600 text-white shadow-md py-6 px-8">
-        <div class="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
-            <div class="flex flex-col md:flex-row md:items-baseline md:space-x-3 text-center md:text-left">
-                <h1 class="text-2xl md:text-3xl font-bold tracking-tight">PDF Utility Hub</h1>
-                <span class="text-indigo-200 text-sm md:text-base font-medium">By Mr. Priyank Panchal</span>
-            </div>
-            <p class="hidden md:block text-indigo-200 text-sm font-medium">By Mr. Priyank Panchal</p>
+    <header class="bg-indigo-600 text-white shadow-md">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold tracking-wide">PDF Utility Hub</h1>
+            <span class="text-sm font-medium opacity-90">By Mr. Priyank Panchal</span>
         </div>
     </header>
 
     <!-- Main Container -->
-    <main class="max-w-5xl mx-auto px-4 py-8 w-full flex-grow">
+    <main class="max-w-5xl mx-auto px-4 py-8 flex-grow w-full">
         
         <!-- Navigation Tabs -->
-        <div class="flex flex-wrap border-b border-slate-200 mb-8 gap-2">
+        <div class="flex flex-wrap border-b border-slate-300 mb-6 bg-white rounded-t-xl shadow-sm overflow-hidden">
             <button onclick="switchTab('merge')" id="tab-merge" class="py-3 px-4 font-semibold text-indigo-600 border-b-2 border-indigo-600 focus:outline-none transition">Merge PDFs</button>
             <button onclick="switchTab('split')" id="tab-split" class="py-3 px-4 font-semibold text-slate-500 hover:text-slate-700 focus:outline-none transition">Split PDF</button>
             <button onclick="switchTab('cut')" id="tab-cut" class="py-3 px-4 font-semibold text-slate-500 hover:text-slate-700 focus:outline-none transition">Cut & Reorder</button>
@@ -42,82 +39,101 @@
             <button onclick="switchTab('watermark')" id="tab-watermark" class="py-3 px-4 font-semibold text-slate-500 hover:text-slate-700 focus:outline-none transition">Watermark</button>
         </div>
 
-        <!-- 1. MERGE SECTION -->
-        <section id="section-merge" class="space-y-6">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h2 class="text-xl font-bold text-slate-700 mb-4">Merge Multiple PDFs (Auto-Sequenced)</h2>
-                <input type="file" id="merge-files" multiple accept=".pdf" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-200 rounded-lg p-2"/>
-                <button onclick="mergePDFs()" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow transition">Merge & Download PDF</button>
-            </div>
-        </section>
+        <!-- Card Wrapper -->
+        <div class="bg-white rounded-b-xl shadow-md p-6 sm:p-8">
 
-        <!-- 2. SPLIT SECTION -->
-        <section id="section-split" class="space-y-6 hidden">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h2 class="text-xl font-bold text-slate-700 mb-4">Extract & Split Specific Pages</h2>
-                <input type="file" id="split-file" accept=".pdf" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-200 rounded-lg p-2 mb-4"/>
-                <label class="block text-sm font-semibold text-slate-700 mb-1">Enter Page Numbers (comma-separated):</label>
-                <input type="text" id="split-pages-input" placeholder="e.g. 2, 4, 6" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
-                <button onclick="splitPDF()" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow transition">Extract & Download Pages</button>
-            </div>
-        </section>
+            <!-- SECTION 1: MERGE -->
+            <section id="section-merge" class="space-y-6">
+                <h2 class="text-xl font-bold text-slate-700">Merge Multiple PDFs</h2>
+                <p class="text-sm text-slate-500">Select multiple PDF files to combine them into a single document alphabetically.</p>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Select PDF Files:</label>
+                    <input type="file" id="merge-files" multiple accept="application/pdf" class="w-full border border-slate-300 rounded-lg p-2 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                </div>
+                <button onclick="mergePDFs()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-6 rounded-lg transition shadow">Merge and Download</button>
+            </section>
 
-        <!-- 3. CUT & REORDER SECTION -->
-        <section id="section-cut" class="space-y-6 hidden">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h2 class="text-xl font-bold text-slate-700 mb-4">Cut & Reorder Pages</h2>
-                <input type="file" id="cut-file" accept=".pdf" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-200 rounded-lg p-2 mb-4"/>
-                <label class="block text-sm font-semibold text-slate-700 mb-1">Type Pages or Ranges:</label>
-                <input type="text" id="cut-pages-input" placeholder="e.g. 10, 15-25" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white mb-6"/>
-                <button onclick="cutPDF()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow transition">Export Cut & Sequenced PDF</button>
-            </div>
-        </section>
+            <!-- SECTION 2: SPLIT -->
+            <section id="section-split" class="space-y-6 hidden">
+                <h2 class="text-xl font-bold text-slate-700">Split PDF Pages</h2>
+                <p class="text-sm text-slate-500">Extract specific page numbers (e.g., 1, 3, 5) into a new document.</p>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Select PDF File:</label>
+                    <input type="file" id="split-file" accept="application/pdf" class="w-full border border-slate-300 rounded-lg p-2 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Pages to Extract (comma separated):</label>
+                    <input type="text" id="split-pages-input" placeholder="e.g. 1, 2, 4" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <button onclick="splitPDF()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-6 rounded-lg transition shadow">Extract & Download</button>
+            </section>
 
-        <!-- 4. PDF TO JPG SECTION -->
-        <section id="section-pdf2jpg" class="space-y-6 hidden">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h2 class="text-xl font-bold text-slate-700 mb-4">Convert PDF Pages to JPG Archive (ZIP)</h2>
-                <input type="file" id="pdf2jpg-file" accept=".pdf" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-200 rounded-lg p-2 mb-4"/>
-                <button onclick="convertPdfToJpg()" id="pdf2jpg-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow transition">Convert & Download ZIP</button>
-            </div>
-        </section>
+            <!-- SECTION 3: CUT & REORDER -->
+            <section id="section-cut" class="space-y-6 hidden">
+                <h2 class="text-xl font-bold text-slate-700">Cut & Reorder PDF Pages</h2>
+                <p class="text-sm text-slate-500">Specify custom ranges and sequences (e.g., 5-1, 8, 10-15).</p>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Select PDF File:</label>
+                    <input type="file" id="cut-file" accept="application/pdf" class="w-full border border-slate-300 rounded-lg p-2 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-1">Page Ranges / Sequence:</label>
+                    <input type="text" id="cut-pages-input" placeholder="e.g. 5-1, 8, 10-12" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <button onclick="cutPDF()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-6 rounded-lg transition shadow">Process & Download</button>
+            </section>
 
-        <!-- 5. JPG TO PDF SECTION -->
-        <section id="section-jpg2pdf" class="space-y-6 hidden">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h2 class="text-xl font-bold text-slate-700 mb-4">Convert JPG Images to PDF (Auto-Sequenced)</h2>
-                <input type="file" id="jpg2pdf-files" multiple accept="image/jpeg, image/png" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-200 rounded-lg p-2 mb-4"/>
-                <button onclick="convertJpgToPdf()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow transition">Create & Download PDF</button>
-            </div>
-        </section>
+            <!-- SECTION 4: PDF TO JPG -->
+            <section id="section-pdf2jpg" class="space-y-6 hidden">
+                <h2 class="text-xl font-bold text-slate-700">Convert PDF to JPG Images</h2>
+                <p class="text-sm text-slate-500">Extract every page of a PDF into individual high-res JPG images zipped together.</p>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Select PDF File:</label>
+                    <input type="file" id="pdf2jpg-file" accept="application/pdf" class="w-full border border-slate-300 rounded-lg p-2 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                </div>
+                <button id="pdf2jpg-btn" onclick="convertPdfToJpg()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-6 rounded-lg transition shadow">Convert & Download ZIP</button>
+            </section>
 
-        <!-- 6. UNIVERSAL WATERMARK SECTION (Supports Both PDF & JPG) -->
-        <section id="section-watermark" class="space-y-6 hidden">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h2 class="text-xl font-bold text-slate-700 mb-2">Add Custom Watermark</h2>
-                <p class="text-sm text-slate-500 mb-4">Upload either a <strong>PDF file</strong> or <strong>JPG/PNG images</strong>. The app will automatically handle both!</p>
+            <!-- SECTION 5: JPG TO PDF -->
+            <section id="section-jpg2pdf" class="space-y-6 hidden">
+                <h2 class="text-xl font-bold text-slate-700">Convert Images to PDF</h2>
+                <p class="text-sm text-slate-500">Upload multiple JPG or PNG images to assemble them into a sequenced PDF file.</p>
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Select Image Files:</label>
+                    <input type="file" id="jpg2pdf-files" multiple accept="image/jpeg, image/png" class="w-full border border-slate-300 rounded-lg p-2 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                </div>
+                <button onclick="convertJpgToPdf()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-6 rounded-lg transition shadow">Create PDF</button>
+            </section>
+
+            <!-- SECTION 6: UNIVERSAL WATERMARK -->
+            <section id="section-watermark" class="space-y-6 hidden">
+                <h2 class="text-xl font-bold text-slate-700">Add Custom Watermark</h2>
+                <p class="text-sm text-slate-500">Upload either a <strong>PDF file</strong> or <strong>JPG/PNG images</strong>. The app will automatically handle both!</p>
                 
-                <input type="file" id="watermark-file" multiple accept=".pdf, image/jpeg, image/png" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-200 rounded-lg p-2 mb-4"/>
-                
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                <div>
+                    <label class="block text-sm font-medium text-slate-700 mb-2">Choose Files:</label>
+                    <input type="file" id="watermark-file" multiple accept="application/pdf, image/jpeg, image/png" class="w-full border border-slate-300 rounded-lg p-2 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100">
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">Watermark Text:</label>
-                        <input type="text" id="watermark-text" value="CONFIDENTIAL" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm"/>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Watermark Text:</label>
+                        <input type="text" id="watermark-text" placeholder="e.g. CONFIDENTIAL" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">For PDFs Only (Pages, leave blank for all):</label>
-                        <input type="text" id="watermark-pages" placeholder="e.g. 1, 3-5" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm"/>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">For PDFs Only (Pages, leave blank for all):</label>
+                        <input type="text" id="watermark-pages" placeholder="e.g. 1-3, 5" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm focus:ring-2 focus:ring-indigo-500">
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-slate-50 p-4 rounded-lg border border-slate-200">
+                <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 grid grid-cols-1 sm:grid-cols-3 gap-4 items-center">
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">Font Size: <span id="size-val">38</span>pt</label>
-                        <input type="range" id="watermark-size" min="10" max="100" value="38" oninput="document.getElementById('size-val').innerText=this.value" class="w-full accent-indigo-600"/>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Font Size: <span id="size-val">38</span>pt</label>
+                        <input type="range" id="watermark-size" min="15" max="100" value="38" oninput="document.getElementById('size-val').innerText=this.value" class="w-full accent-indigo-600">
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">Color Theme:</label>
-                        <select id="watermark-color" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white">
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Color Theme:</label>
+                        <select id="watermark-color" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500">
                             <option value="dark">Dark Charcoal</option>
                             <option value="light-gray">Light Gray</option>
                             <option value="light-red">Light Red</option>
@@ -125,25 +141,41 @@
                         </select>
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">Style Modifier:</label>
-                        <div class="flex items-center space-x-4 mt-2">
-                            <label class="flex items-center text-sm"><input type="checkbox" id="watermark-bold" checked class="mr-1.5 accent-indigo-600"/> Bold</label>
-                            <label class="flex items-center text-sm"><input type="checkbox" id="watermark-italic" class="mr-1.5 accent-indigo-600"/> Italic</label>
-                        </div>
+                        <label class="block text-sm font-medium text-slate-700 mb-1">Watermark Position:</label>
+                        <select id="watermark-position" class="w-full border border-slate-300 rounded-lg p-2 text-sm focus:ring-2 focus:ring-indigo-500">
+                            <option value="center-diagonal">Center (Diagonal)</option>
+                            <option value="center-horizontal">Center (Horizontal)</option>
+                            <option value="top">Top</option>
+                            <option value="bottom">Bottom</option>
+                            <option value="top-left">Top-Left</option>
+                            <option value="bottom-right">Bottom-Right</option>
+                        </select>
+                    </div>
+                    <div class="sm:col-span-3 flex items-center space-x-6 pt-2">
+                        <span class="text-sm font-medium text-slate-700">Style Modifier:</span>
+                        <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                            <input type="checkbox" id="watermark-bold" checked class="rounded text-indigo-600 focus:ring-indigo-500">
+                            <span>Bold</span>
+                        </label>
+                        <label class="flex items-center space-x-2 text-sm cursor-pointer">
+                            <input type="checkbox" id="watermark-italic" class="rounded text-indigo-600 focus:ring-indigo-500">
+                            <span>Italic</span>
+                        </label>
                     </div>
                 </div>
 
-                <button onclick="processUniversalWatermark()" id="watermark-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow transition">Apply Watermark & Download</button>
-            </div>
-        </section>
+                <button id="watermark-btn" onclick="processUniversalWatermark()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2.5 px-6 rounded-lg transition shadow">Apply Watermark & Download</button>
+            </section>
 
+        </div>
     </main>
 
     <!-- Footer -->
-    <footer class="bg-white border-t border-slate-200 py-4 text-center text-sm text-slate-500">
-        <p>&copy; 2026 PDF Utility Hub. Designed & Developed by <strong class="text-slate-700">Mr. Priyank Panchal</strong>.</p>
+    <footer class="bg-white border-t border-slate-200 text-center py-4 text-xs text-slate-500 mt-8">
+        &copy; 2026 PDF Utility Hub. Designed & Developed by <strong>Mr. Priyank Panchal</strong>.
     </footer>
 
+    <!-- Script File -->
     <script src="script.js"></script>
 </body>
 </html>
