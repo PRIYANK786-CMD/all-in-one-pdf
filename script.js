@@ -106,7 +106,7 @@ async function convertPdfToJpg() {
     }
 }
 
-// 5. JPG TO PDF CONVERSION (Auto-Sequenced by Name: 2, 5, 7 -> 1, 2, 3 or B, N, G, A -> A, B, C, D)
+// 5. JPG TO PDF CONVERSION (Strict Auto-Sequencing: e.g., 2,4,6,1 becomes 1,2,4,6 & b,n,g,a becomes a,b,g,n)
 async function convertJpgToPdf() {
     const fileInput = document.getElementById('jpg2pdf-files');
     if (fileInput.files.length === 0) {
@@ -116,8 +116,10 @@ async function convertJpgToPdf() {
 
     const filesArray = Array.from(fileInput.files);
     
-    // Automatically sort files based on their names (numeric-aware and alphabetical sorting)
-    filesArray.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+    // Automatically sort files strictly by filename sequence (numeric-aware and alphabetical)
+    filesArray.sort((a, b) => {
+        return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' });
+    });
 
     const pdfDoc = await PDFLib.PDFDocument.create();
 
@@ -139,7 +141,7 @@ async function convertJpgToPdf() {
         });
     }
 
-    downloadBlob(await pdfDoc.save(), "auto-sequenced-images.pdf", "application/pdf");
+    downloadBlob(await pdfDoc.save(), "sequenced-images.pdf", "application/pdf");
 }
 
 // 6. WATERMARK PDF FUNCTIONALITY
