@@ -179,14 +179,16 @@ async function processUniversalWatermark() {
             const pdfDoc = await PDFLib.PDFDocument.load(await firstFile.arrayBuffer());
             const totalPages = pdfDoc.getPageCount();
 
+            // Safe Standard Font mapping to prevent runtime crashes
+            let fontChoice = PDFLib.StandardFonts.Helvetica;
+            if (isBold && isItalic) fontChoice = PDFLib.StandardFonts.HelveticaBoldOblique;
+            else if (isBold) fontChoice = PDFLib.StandardFonts.HelveticaBold;
+            else if (isItalic) fontChoice = PDFLib.StandardFonts.HelveticaOblique;
+
             let font;
             try {
-                let fontName = PDFLib.StandardFonts.Helvetica;
-                if (isBold && isItalic) fontName = PDFLib.StandardFonts.HelveticaBoldOblique;
-                else if (isBold) fontName = PDFLib.StandardFonts.HelveticaBold;
-                else if (isItalic) fontName = PDFLib.StandardFonts.Oblique;
-                font = await pdfDoc.embedFont(fontName);
-            } catch (err) {
+                font = await pdfDoc.embedFont(fontChoice);
+            } catch (e) {
                 font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
             }
 
