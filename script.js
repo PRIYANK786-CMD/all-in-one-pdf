@@ -77,32 +77,52 @@ async function cutPDF() {
     downloadBlob(await newPdf.save(), "cut-and-sequenced-utility.pdf", "application/pdf");
 }
 
-// 4. PDF TO JPG CONVERSION
+// 4. PDF TO JPG CONVERSION (Bundled into a single ZIP file download)
 async function convertPdfToJpg() {
     const fileInput = document.getElementById('pdf2jpg-file');
+    const btn = document.getElementById('pdf2jpg-btn');
     if (fileInput.files.length === 0) {
         alert('Please select a PDF file.');
         return;
     }
 
-    const file = fileInput.files[0];
-    const arrayBuffer = await file.arrayBuffer();
-    const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
-    const pdfDoc = await loadingTask.promise;
+    btn.innerText = "Converting & Packaging ZIP...";
+    btn.disabled = true;
 
-    for (let i = 1; i <= pdfDoc.numPages; i++) {
-        const page = await pdfDoc.getPage(i);
-        const viewport = page.getViewport({ scale: 2.0 }); 
-        const canvas = document.createElement('canvas');
-        const context = canvas.getContext('2d');
-        canvas.height = viewport.height;
-        canvas.width = viewport.width;
+    try {
+        const file = fileInput.files[0];
+        const arrayBuffer = await file.arrayBuffer();
+        const loadingTask = pdfjsLib.getDocument({ data: arrayBuffer });
+        const pdfDoc = await loadingTask.promise;
 
-        await page.render({ canvasContext: context, viewport: viewport }).promise;
-        
-        canvas.toBlob(blob => {
-            downloadBlob(blob, `${file.name.replace('.pdf', '')}_page_${i}.jpg`, 'image/jpeg');
-        }, 'image/jpeg', 0.9);
+        const zip = new JSZip();
+        const folderName = file.name.replace('.pdf', '');
+        const imgFolder = zip.folder(folderName);
+
+        for (let i = 1; i <= pdfDoc.numPages; i++) {
+            const page = await pdfDoc.getPage(i);
+            const viewport = page.getViewport({ scale: 2.0 }); 
+            const canvas = document.createElement('canvas');
+            const context = canvas.getContext('2d');
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            await page.render({ canvasContext: context, viewport: viewport }).promise;
+            
+            // Convert canvas data to blob
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+            imgFolder.file(`page_${i}.jpg`, blob);
+        }
+
+        // Generate ZIP content and trigger download
+        const zipContent = await zip.generateAsync({ type: 'blob' });
+        downloadBlob(zipContent, `${folderName}_images.zip`, 'application/zip');
+    } catch (error) {
+        console.error(error);
+        alert('An error occurred while converting the PDF.');
+    } finally {
+        btn.innerText = "Convert & Download ZIP";
+        btn.disabled = false;
     }
 }
 
