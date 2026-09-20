@@ -116,7 +116,7 @@ async function convertPdfToJpg() {
         downloadBlob(zipContent, `${folderName}_images.zip`, 'application/zip');
     } catch (error) {
         console.error(error);
-        alert('An error occurred while converting the PDF.');
+        alert('An error occurred while converting the PDF: ' + error.message);
     } finally {
         btn.innerText = "Convert & Download ZIP";
         btn.disabled = false;
@@ -179,18 +179,8 @@ async function processUniversalWatermark() {
             const pdfDoc = await PDFLib.PDFDocument.load(await firstFile.arrayBuffer());
             const totalPages = pdfDoc.getPageCount();
 
-            // Safe Standard Font mapping to prevent runtime crashes
-            let fontChoice = PDFLib.StandardFonts.Helvetica;
-            if (isBold && isItalic) fontChoice = PDFLib.StandardFonts.HelveticaBoldOblique;
-            else if (isBold) fontChoice = PDFLib.StandardFonts.HelveticaBold;
-            else if (isItalic) fontChoice = PDFLib.StandardFonts.HelveticaOblique;
-
-            let font;
-            try {
-                font = await pdfDoc.embedFont(fontChoice);
-            } catch (e) {
-                font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
-            }
+            // Always embed standard Helvetica safely to prevent font mapping errors
+            let font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
 
             let rgbColor = PDFLib.rgb(0.2, 0.2, 0.2); // Dark Charcoal
             if (colorTheme === 'light-gray') rgbColor = PDFLib.rgb(0.75, 0.75, 0.75);
@@ -211,7 +201,7 @@ async function processUniversalWatermark() {
                     font: font,
                     color: rgbColor,
                     opacity: 0.4,
-                    rotate: PDFLib.degrees(45),
+                    rotate: { type: 'angle', angle: 45 },
                 });
             }
 
@@ -261,7 +251,7 @@ async function processUniversalWatermark() {
 
     } catch (error) {
         console.error(error);
-        alert('An error occurred while applying the watermark.');
+        alert('Watermark Error: ' + error.message);
     } finally {
         btn.innerText = "Apply Watermark & Download";
         btn.disabled = false;
