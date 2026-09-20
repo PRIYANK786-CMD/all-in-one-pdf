@@ -39,8 +39,7 @@
             <button onclick="switchTab('cut')" id="tab-cut" class="py-3 px-4 font-semibold text-slate-500 hover:text-slate-700 focus:outline-none transition">Cut & Reorder</button>
             <button onclick="switchTab('pdf2jpg')" id="tab-pdf2jpg" class="py-3 px-4 font-semibold text-slate-500 hover:text-slate-700 focus:outline-none transition">PDF to JPG</button>
             <button onclick="switchTab('jpg2pdf')" id="tab-jpg2pdf" class="py-3 px-4 font-semibold text-slate-500 hover:text-slate-700 focus:outline-none transition">JPG to PDF</button>
-            <button onclick="switchTab('watermark')" id="tab-watermark" class="py-3 px-4 font-semibold text-slate-500 hover:text-slate-700 focus:outline-none transition">Watermark PDF</button>
-            <button onclick="switchTab('watermark-jpg')" id="tab-watermark-jpg" class="py-3 px-4 font-semibold text-slate-500 hover:text-slate-700 focus:outline-none transition">Watermark JPG</button>
+            <button onclick="switchTab('watermark')" id="tab-watermark" class="py-3 px-4 font-semibold text-slate-500 hover:text-slate-700 focus:outline-none transition">Watermark</button>
         </div>
 
         <!-- 1. MERGE SECTION -->
@@ -57,7 +56,7 @@
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <h2 class="text-xl font-bold text-slate-700 mb-4">Extract & Split Specific Pages</h2>
                 <input type="file" id="split-file" accept=".pdf" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-200 rounded-lg p-2 mb-4"/>
-                <label for="split-pages-input" class="block text-sm font-semibold text-slate-700 mb-1">Enter Page Numbers (comma-separated):</label>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Enter Page Numbers (comma-separated):</label>
                 <input type="text" id="split-pages-input" placeholder="e.g. 2, 4, 6" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"/>
                 <button onclick="splitPDF()" class="mt-6 w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow transition">Extract & Download Pages</button>
             </div>
@@ -68,7 +67,7 @@
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <h2 class="text-xl font-bold text-slate-700 mb-4">Cut & Reorder Pages</h2>
                 <input type="file" id="cut-file" accept=".pdf" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-200 rounded-lg p-2 mb-4"/>
-                <label for="cut-pages-input" class="block text-sm font-semibold text-slate-700 mb-1">Type Pages or Ranges:</label>
+                <label class="block text-sm font-semibold text-slate-700 mb-1">Type Pages or Ranges:</label>
                 <input type="text" id="cut-pages-input" placeholder="e.g. 10, 15-25" class="w-full border border-slate-300 rounded-lg p-3 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white mb-6"/>
                 <button onclick="cutPDF()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow transition">Export Cut & Sequenced PDF</button>
             </div>
@@ -87,42 +86,54 @@
         <section id="section-jpg2pdf" class="space-y-6 hidden">
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
                 <h2 class="text-xl font-bold text-slate-700 mb-4">Convert JPG Images to PDF (Auto-Sequenced)</h2>
-                <p class="text-sm text-slate-500 mb-4">Select multiple images (e.g., 2, 4, 1 or b, n, a). They automatically order into 1, 2, 3... or a, b, c...</p>
                 <input type="file" id="jpg2pdf-files" multiple accept="image/jpeg, image/png" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-200 rounded-lg p-2 mb-4"/>
                 <button onclick="convertJpgToPdf()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow transition">Create & Download PDF</button>
             </div>
         </section>
 
-        <!-- 6. WATERMARK PDF SECTION -->
+        <!-- 6. UNIVERSAL WATERMARK SECTION (Supports Both PDF & JPG) -->
         <section id="section-watermark" class="space-y-6 hidden">
             <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h2 class="text-xl font-bold text-slate-700 mb-4">Add Custom Watermark to PDF</h2>
-                <input type="file" id="watermark-file" accept=".pdf" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-200 rounded-lg p-2 mb-4"/>
+                <h2 class="text-xl font-bold text-slate-700 mb-2">Add Custom Watermark</h2>
+                <p class="text-sm text-slate-500 mb-4">Upload either a <strong>PDF file</strong> or <strong>JPG/PNG images</strong>. The app will automatically handle both!</p>
+                
+                <input type="file" id="watermark-file" multiple accept=".pdf, image/jpeg, image/png" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-200 rounded-lg p-2 mb-4"/>
+                
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                     <div>
                         <label class="block text-sm font-semibold text-slate-700 mb-1">Watermark Text:</label>
                         <input type="text" id="watermark-text" value="CONFIDENTIAL" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm"/>
                     </div>
                     <div>
-                        <label class="block text-sm font-semibold text-slate-700 mb-1">Pages (leave blank for all):</label>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">For PDFs Only (Pages, leave blank for all):</label>
                         <input type="text" id="watermark-pages" placeholder="e.g. 1, 3-5" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm"/>
                     </div>
                 </div>
-                <button onclick="addWatermark()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow transition">Apply Watermark & Download PDF</button>
-            </div>
-        </section>
 
-        <!-- 7. WATERMARK JPG SECTION -->
-        <section id="section-watermark-jpg" class="space-y-6 hidden">
-            <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                <h2 class="text-xl font-bold text-slate-700 mb-4">Add Custom Watermark to JPG Images</h2>
-                <p class="text-sm text-slate-500 mb-4">Upload one or multiple JPG/PNG images to stamp text watermarks across all of them, downloaded as a ZIP file.</p>
-                <input type="file" id="watermark-jpg-files" multiple accept="image/jpeg, image/png" class="block w-full text-sm text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:font-semibold file:bg-indigo-50 file:text-indigo-700 hover:file:bg-indigo-100 cursor-pointer border border-slate-200 rounded-lg p-2 mb-4"/>
-                <div class="mb-4">
-                    <label class="block text-sm font-semibold text-slate-700 mb-1">Watermark Text:</label>
-                    <input type="text" id="watermark-jpg-text" value="CONFIDENTIAL" class="w-full border border-slate-300 rounded-lg p-2.5 text-sm"/>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 bg-slate-50 p-4 rounded-lg border border-slate-200">
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Font Size: <span id="size-val">38</span>pt</label>
+                        <input type="range" id="watermark-size" min="10" max="100" value="38" oninput="document.getElementById('size-val').innerText=this.value" class="w-full accent-indigo-600"/>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Color Theme:</label>
+                        <select id="watermark-color" class="w-full border border-slate-300 rounded-lg p-2 text-sm bg-white">
+                            <option value="dark">Dark Charcoal</option>
+                            <option value="light-gray">Light Gray</option>
+                            <option value="light-red">Light Red</option>
+                            <option value="light-blue">Light Blue</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-semibold text-slate-700 mb-1">Style Modifier:</label>
+                        <div class="flex items-center space-x-4 mt-2">
+                            <label class="flex items-center text-sm"><input type="checkbox" id="watermark-bold" checked class="mr-1.5 accent-indigo-600"/> Bold</label>
+                            <label class="flex items-center text-sm"><input type="checkbox" id="watermark-italic" class="mr-1.5 accent-indigo-600"/> Italic</label>
+                        </div>
+                    </div>
                 </div>
-                <button onclick="addWatermarkJpg()" id="watermark-jpg-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow transition">Apply Watermark & Download ZIP</button>
+
+                <button onclick="processUniversalWatermark()" id="watermark-btn" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-semibold py-3 rounded-lg shadow transition">Apply Watermark & Download</button>
             </div>
         </section>
 

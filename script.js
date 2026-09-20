@@ -1,6 +1,6 @@
 // Tab Switching Utility
 function switchTab(tabName) {
-    ['merge', 'split', 'cut', 'pdf2jpg', 'jpg2pdf', 'watermark', 'watermark-jpg'].forEach(t => {
+    ['merge', 'split', 'cut', 'pdf2jpg', 'jpg2pdf', 'watermark'].forEach(t => {
         document.getElementById(`section-${t}`).classList.add('hidden');
         document.getElementById(`tab-${t}`).className = "py-3 px-4 font-semibold text-slate-500 hover:text-slate-700 focus:outline-none transition";
     });
@@ -152,96 +152,112 @@ async function convertJpgToPdf() {
     downloadBlob(await pdfDoc.save(), "sequenced-images.pdf", "application/pdf");
 }
 
-// 6. WATERMARK PDF FUNCTIONALITY
-async function addWatermark() {
+// 6. UNIVERSAL WATERMARK FUNCTIONALITY (Handles both PDF & JPG files correctly)
+async function processUniversalWatermark() {
     const fileInput = document.getElementById('watermark-file');
     const text = document.getElementById('watermark-text').value.trim();
     const pagesInput = document.getElementById('watermark-pages').value.trim();
+    const size = parseInt(document.getElementById('watermark-size').value, 10);
+    const colorTheme = document.getElementById('watermark-color').value;
+    const isBold = document.getElementById('watermark-bold').checked;
+    const isItalic = document.getElementById('watermark-italic').checked;
+    const btn = document.getElementById('watermark-btn');
 
     if (fileInput.files.length === 0 || !text) {
-        alert('Please upload a PDF file and specify watermark text.');
+        alert('Please select a file (PDF or images) and enter watermark text.');
         return;
     }
 
-    const pdfDoc = await PDFLib.PDFDocument.load(await fileInput.files[0].arrayBuffer());
-    const totalPages = pdfDoc.getPageCount();
-    const font = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
-
-    let targetIndices = pagesInput ? parsePageRanges(pagesInput, totalPages) : pdfDoc.getPageIndices();
-
-    for (let idx of targetIndices) {
-        const page = pdfDoc.getPage(idx);
-        const { width, height } = page.getSize();
-        const size = 40;
-        const textWidth = font.widthOfTextAtSize(text, size);
-
-        page.drawText(text, {
-            x: (width / 2) - (textWidth / 2),
-            y: height / 2,
-            size: size,
-            font: font,
-            color: PDFLib.rgb(0.7, 0.7, 0.7),
-            opacity: 0.4,
-            rotate: PDFLib.degrees(45),
-        });
-    }
-
-    downloadBlob(await pdfDoc.save(), "watermarked-document.pdf", "application/pdf");
-}
-
-// 7. WATERMARK JPG FUNCTIONALITY
-async function addWatermarkJpg() {
-    const fileInput = document.getElementById('watermark-jpg-files');
-    const text = document.getElementById('watermark-jpg-text').value.trim();
-    const btn = document.getElementById('watermark-jpg-btn');
-
-    if (fileInput.files.length === 0 || !text) {
-        alert('Please select image files and specify watermark text.');
-        return;
-    }
-
-    btn.innerText = "Processing Watermarks...";
+    btn.innerText = "Processing Watermark...";
     btn.disabled = true;
 
     try {
-        const zip = new JSZip();
-        const imgFolder = zip.folder("watermarked_images");
-        const filesArray = Array.from(fileInput.files);
+        const firstFile = fileInput.files[0];
+        
+        // CHECK IF FILE IS A PDF
+        if (firstFile.type === 'application/pdf' || firstFile.name.toLowerCase().endsWith('.pdf')) {
+            const pdfDoc = await PDFLib.PDFDocument.load(await firstFile.arrayBuffer());
+            const totalPages = pdfDoc.getPageCount();
 
-        for (let file of filesArray) {
-            const imgBitmap = await createImageBitmap(file);
-            const canvas = document.createElement('canvas');
-            canvas.width = imgBitmap.width;
-            canvas.height = imgBitmap.height;
-            const ctx = canvas.getContext('2d');
+            let fontName = PDFLib.StandardFonts.Helvetica;
+            if (isBold && isItalic) fontName = PDFLib.StandardFonts.HelveticaBoldOblique;
+            else if (isBold) fontName = PDFLib.StandardFonts.HelveticaBold;
+            else if (isItalic) fontName = PDFLib.StandardFonts.Oblique;
 
-            // Draw original image
-            ctx.drawImage(imgBitmap, 0, 0);
+            const font = await pdfDoc.embedFont(fontName);
 
-            // Configure watermark style
-            ctx.font = `bold ${Math.max(canvas.width / 20, 30)}px Helvetica`;
-            ctx.fillStyle = 'rgba(180, 180, 180, 0.4)';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
+            let rgbColor = PDFLib.rgb(0.2, 0.2, 0.2); // Dark Charcoal
+            if (colorTheme === 'light-gray') rgbColor = PDFLib.rgb(0.75, 0.75, 0.75);
+            else if (colorTheme === 'light-red') rgbColor = PDFLib.rgb(0.9, 0.6, 0.6);
+            else if (colorTheme === 'light-blue') rgbColor = PDFLib.rgb(0.6, 0.75, 0.9);
 
-            // Apply rotation and draw text in center
-            ctx.save();
-            ctx.translate(canvas.width / 2, canvas.height / 2);
-            ctx.rotate(-Math.PI / 4); // 45 degrees diagonal
-            ctx.fillText(text, 0, 0);
-            ctx.restore();
+            let targetIndices = pagesInput ? parsePageRanges(pagesInput, totalPages) : pdfDoc.getPageIndices();
 
-            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
-            imgFolder.file(`watermarked_${file.name}`, blob);
+            for (let idx of targetIndices) {
+                const page = pdfDoc.getPage(idx);
+                const { width, height } = page.getSize();
+                const textWidth = font.widthOfTextAtSize(text, size);
+
+                page.drawText(text, {
+                    x: (width / 2) - (textWidth / 2),
+                    y: height / 2,
+                    size: size,
+                    font: font,
+                    color: rgbColor,
+                    opacity: 0.4,
+                    rotate: PDFLib.degrees(45),
+                });
+            }
+
+            downloadBlob(await pdfDoc.save(), "watermarked-document.pdf", "application/pdf");
+
+        } else {
+            // OTHERWISE, PROCESS AS IMAGE/JPG FILES BUNDLED IN ZIP
+            const zip = new JSZip();
+            const imgFolder = zip.folder("watermarked_images");
+            const filesArray = Array.from(fileInput.files);
+
+            for (let file of filesArray) {
+                const imgBitmap = await createImageBitmap(file);
+                const canvas = document.createElement('canvas');
+                canvas.width = imgBitmap.width;
+                canvas.height = imgBitmap.height;
+                const ctx = canvas.getContext('2d');
+
+                ctx.drawImage(imgBitmap, 0, 0);
+
+                let fontStyle = '';
+                if (isBold) fontStyle += 'bold ';
+                if (isItalic) fontStyle += 'italic ';
+                ctx.font = `${fontStyle}${Math.max(canvas.width / 20, size)}px Helvetica, Arial, sans-serif`;
+
+                if (colorTheme === 'light-gray') ctx.fillStyle = 'rgba(180, 180, 180, 0.4)';
+                else if (colorTheme === 'light-red') ctx.fillStyle = 'rgba(230, 100, 100, 0.4)';
+                else if (colorTheme === 'light-blue') ctx.fillStyle = 'rgba(100, 150, 230, 0.4)';
+                else ctx.fillStyle = 'rgba(50, 50, 50, 0.4)'; // Dark
+
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+
+                ctx.save();
+                ctx.translate(canvas.width / 2, canvas.height / 2);
+                ctx.rotate(-Math.PI / 4);
+                ctx.fillText(text, 0, 0);
+                ctx.restore();
+
+                const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+                imgFolder.file(`watermarked_${file.name}`, blob);
+            }
+
+            const zipContent = await zip.generateAsync({ type: 'blob' });
+            downloadBlob(zipContent, "watermarked_images.zip", "application/zip");
         }
 
-        const zipContent = await zip.generateAsync({ type: 'blob' });
-        downloadBlob(zipContent, "watermarked_images.zip", "application/zip");
     } catch (error) {
         console.error(error);
-        alert('An error occurred while watermarking the images.');
+        alert('An error occurred while applying the watermark.');
     } finally {
-        btn.innerText = "Apply Watermark & Download ZIP";
+        btn.innerText = "Apply Watermark & Download";
         btn.disabled = false;
     }
 }
