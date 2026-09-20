@@ -92,7 +92,7 @@ async function convertPdfToJpg() {
 
     for (let i = 1; i <= pdfDoc.numPages; i++) {
         const page = await pdfDoc.getPage(i);
-        const viewport = page.getViewport({ scale: 2.0 }); // High resolution output
+        const viewport = page.getViewport({ scale: 2.0 }); 
         const canvas = document.createElement('canvas');
         const context = canvas.getContext('2d');
         canvas.height = viewport.height;
@@ -106,7 +106,7 @@ async function convertPdfToJpg() {
     }
 }
 
-// 5. JPG TO PDF CONVERSION
+// 5. JPG TO PDF CONVERSION (Auto-Sequenced by Name: 2, 5, 7 -> 1, 2, 3 or B, N, G, A -> A, B, C, D)
 async function convertJpgToPdf() {
     const fileInput = document.getElementById('jpg2pdf-files');
     if (fileInput.files.length === 0) {
@@ -114,8 +114,12 @@ async function convertJpgToPdf() {
         return;
     }
 
-    const pdfDoc = await PDFLib.PDFDocument.create();
     const filesArray = Array.from(fileInput.files);
+    
+    // Automatically sort files based on their names (numeric-aware and alphabetical sorting)
+    filesArray.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' }));
+
+    const pdfDoc = await PDFLib.PDFDocument.create();
 
     for (let file of filesArray) {
         const arrayBuffer = await file.arrayBuffer();
@@ -135,7 +139,7 @@ async function convertJpgToPdf() {
         });
     }
 
-    downloadBlob(await pdfDoc.save(), "images-converted.pdf", "application/pdf");
+    downloadBlob(await pdfDoc.save(), "auto-sequenced-images.pdf", "application/pdf");
 }
 
 // 6. WATERMARK PDF FUNCTIONALITY
@@ -156,7 +160,6 @@ async function addWatermark() {
     const pdfDoc = await PDFLib.PDFDocument.load(await fileInput.files[0].arrayBuffer());
     const totalPages = pdfDoc.getPageCount();
 
-    // Choose Font Style
     let fontName = PDFLib.StandardFonts.Helvetica;
     if (isBold && isItalic) fontName = PDFLib.StandardFonts.HelveticaBoldOblique;
     else if (isBold) fontName = PDFLib.StandardFonts.HelveticaBold;
@@ -164,7 +167,6 @@ async function addWatermark() {
 
     const font = await pdfDoc.embedFont(fontName);
 
-    // Color Setup (Light colors supported)
     let rgbColor = PDFLib.rgb(0.75, 0.75, 0.75); // Light Gray
     if (colorTheme === 'light-red') rgbColor = PDFLib.rgb(0.9, 0.6, 0.6);
     else if (colorTheme === 'light-blue') rgbColor = PDFLib.rgb(0.6, 0.75, 0.9);
