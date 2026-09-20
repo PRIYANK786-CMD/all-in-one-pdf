@@ -173,9 +173,10 @@ async function processUniversalWatermark() {
 
     try {
         const firstFile = fileInput.files[0];
+        const isPdf = firstFile.type === 'application/pdf' || firstFile.name.toLowerCase().endsWith('.pdf');
         
         // CHECK IF FILE IS A PDF
-        if (firstFile.type === 'application/pdf' || firstFile.name.toLowerCase().endsWith('.pdf')) {
+        if (isPdf) {
             const pdfDoc = await PDFLib.PDFDocument.load(await firstFile.arrayBuffer());
             const totalPages = pdfDoc.getPageCount();
 
@@ -251,7 +252,7 @@ async function processUniversalWatermark() {
         }
 
     } catch (error) {
-        console.error(error);
+        console.error("Detailed Watermark Error:", error);
         alert('Watermark Error: ' + error.message);
     } finally {
         btn.innerText = "Apply Watermark & Download";
