@@ -181,7 +181,7 @@ async function processUniversalWatermark() {
             const pdfDoc = await PDFLib.PDFDocument.load(await firstFile.arrayBuffer());
             const totalPages = pdfDoc.getPageCount();
 
-            let font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+            let font = await pdfDoc.embedFont(PDFLib.StandardFonts.HelveticaBold);
 
             let rgbColor = PDFLib.rgb(0.2, 0.2, 0.2); // Dark Charcoal
             if (colorTheme === 'light-gray') rgbColor = PDFLib.rgb(0.75, 0.75, 0.75);
@@ -195,49 +195,57 @@ async function processUniversalWatermark() {
                 const page = pages[idx];
                 const { width, height } = page.getSize();
                 const textWidth = font.widthOfTextAtSize(text, size);
+                const textHeight = size;
 
-                let xCoord, yCoord, rotationAngle = 0;
+                let xCoord = width / 2;
+                let yCoord = height / 2;
+                let rotationAngle = 0;
 
                 switch (position) {
                     case 'center-diagonal':
-                        xCoord = (width / 2) - (textWidth / 2);
-                        yCoord = height / 2;
                         rotationAngle = 45;
                         break;
                     case 'center-horizontal':
-                        xCoord = (width / 2) - (textWidth / 2);
-                        yCoord = height / 2;
                         rotationAngle = 0;
+                        xCoord = (width / 2) - (textWidth / 2);
+                        yCoord = (height / 2) - (textHeight / 3);
                         break;
                     case 'top':
                         xCoord = (width / 2) - (textWidth / 2);
                         yCoord = height - 50;
-                        rotationAngle = 0;
                         break;
                     case 'bottom':
                         xCoord = (width / 2) - (textWidth / 2);
                         yCoord = 50;
-                        rotationAngle = 0;
                         break;
                     case 'top-left':
                         xCoord = 50;
                         yCoord = height - 50;
-                        rotationAngle = 0;
                         break;
                     case 'bottom-right':
                         xCoord = width - textWidth - 50;
                         yCoord = 50;
-                        rotationAngle = 0;
                         break;
                     default:
-                        xCoord = (width / 2) - (textWidth / 2);
-                        yCoord = height / 2;
                         rotationAngle = 45;
                 }
 
+                // Adjust center-diagonal coordinates using angle radians to avoid shifting to corner
+                let finalX = xCoord;
+                let finalY = yCoord;
+
+                if (position === 'center-diagonal') {
+                    const angleRad = (Math.PI / 180) * rotationAngle;
+                    finalX = (width / 2) - ((textWidth / 2) * Math.cos(angleRad) - (textHeight / 2) * Math.sin(angleRad));
+                    finalY = (height / 2) - ((textWidth / 2) * Math.sin(angleRad) + (textHeight / 2) * Math.cos(angleRad));
+                } else if (position === 'center-horizontal') {
+                    finalX = (width / 2) - (textWidth / 2);
+                    finalY = (height / 2) - (textHeight / 3);
+                }
+
                 page.drawText(text, {
-                    x: xCoord,
-                    y: yCoord,
+                    x: finalX,
+                    y: finalY,
                     size: size,
                     font: font,
                     color: rgbColor,
